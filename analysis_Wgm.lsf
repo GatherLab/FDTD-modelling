@@ -1,0 +1,134 @@
+for(radius=5.5e-07; radius<=7e-07; radius=radius+5e-08){
+    for(myindex=1.33; myindex<=1.36; myindex=myindex+0.005){
+         #adjust geometry
+        switchtolayout;
+        #background index
+        select("background1");
+        set("index", myindex);
+        select("background1");
+        set("index", myindex);
+        select("background1");
+        set("index", myindex);
+        
+        #structure radius
+        select("protec1");
+        set("radius", radius);
+        select("protec2");
+        set("radius", radius);
+        select("clad1");
+        set("radius", radius);
+        select("clad2");
+        set("radius", radius);
+        select("barrier0");
+        set("radius", radius);
+        select("barrier1");
+        set("radius", radius);
+        select("barrier2");
+        set("radius", radius);
+        select("well1");
+        set("radius", radius);
+        select("well2");
+        set("radius", radius);
+        select("background1");
+        set("inner radius", radius);
+        
+        #positions of monitors and sources
+        scaling=radius/(0.6e-06);
+        select("spectrum");
+        set("x", (3e-07*scaling));
+        set("y", (3e-07*scaling));
+        select("source");
+        set("y", 5e-07*scaling);
+        select("source_2");
+        set("x", (2e-07*scaling));
+        set("y", (4e-07*scaling));
+        select("source_3");
+        set("x", (4e-07*scaling));
+        select("source_4");
+        set("x", (-5e-07*scaling));
+        set("y", (-3e-07*scaling));
+        
+        run; 
+        
+        #get results from data
+        power1=getresult("spectrum", "P");
+        px=power1.Px;
+        py=power1.Py;
+        power=pinch(sqrt(abs(px)^2+abs(py)^2));
+        freq=getresult("spectrum", "f");
+        title="index"+num2str(myindex)+"_"+num2str(radius)+"_";
+        myfig=plot(c/freq*10^9,power, "wavelength (nm)", "power", title);
+        filename=title+".png";
+        exportfigure(filename);
+        #find 3 major peaks
+        peaks=sort(findpeaks(power,5));
+        peak1=c/freq(peaks(1));
+        peak2=c/freq(peaks(2));
+        peak3=c/freq(peaks(3));
+        peak4=c/freq(peaks(4));
+        peak5=c/freq(peaks(5));
+        all_peaks=[radius, myindex, peak1, peak2, peak3, peak4, peak5];
+        #save results
+        pathname="2Dresults.txt";
+        write(pathname, num2str(all_peaks));
+        
+        switchtolayout;
+        
+        #readjust monitors to match peaks
+        select("profile1_1");
+        set("wavelength center", peak1);
+        select("profile2_1");
+        set("wavelength center", peak2);
+        select("profile3_1");
+        set("wavelength center", peak3);
+        select("profile4_1");
+        set("wavelength center", peak4);
+        select("profile5_1");
+        set("wavelength center", peak5);
+        
+        run;
+        
+        #save mode profiles
+        x=getdata("profile1_1", "x");
+        y=getdata("profile1_1", "y");
+        Ex=getdata("profile1_1", "Ex");
+        Ey=getdata("profile1_1", "Ey");
+        E=pinch(sqrt(abs(Ex)^2+abs(Ey)^2));
+        image(x,y,E);
+        filename=title+num2str(peak1)+".png";
+        exportfigure(filename);
+        x=getdata("profile2_1", "x");
+        y=getdata("profile2_1", "y");
+        Ex=getdata("profile2_1", "Ex");
+        Ey=getdata("profile2_1", "Ey");
+        E=pinch(sqrt(abs(Ex)^2+abs(Ey)^2));
+        image(x,y,E);
+        filename=title+num2str(peak2)+".png";
+        exportfigure(filename);
+        x=getdata("profile3_1", "x");
+        y=getdata("profile3_1", "y");
+        Ex=getdata("profile3_1", "Ex");
+        Ey=getdata("profile3_1", "Ey");
+        E=pinch(sqrt(abs(Ex)^2+abs(Ey)^2));
+        image(x,y,E);
+        filename=title+num2str(peak3)+".png";
+        exportfigure(filename);
+        x=getdata("profile4_1", "x");
+        y=getdata("profile4_1", "y");
+        Ex=getdata("profile4_1", "Ex");
+        Ey=getdata("profile4_1", "Ey");
+        E=pinch(sqrt(abs(Ex)^2+abs(Ey)^2));
+        image(x,y,E);
+        filename=title+num2str(peak4)+".png";
+        exportfigure(filename);
+        x=getdata("profile5_1", "x");
+        y=getdata("profile5_1", "y");
+        Ex=getdata("profile5_1", "Ex");
+        Ey=getdata("profile5_1", "Ey");
+        E=pinch(sqrt(abs(Ex)^2+abs(Ey)^2));
+        image(x,y,E);
+        filename=title+num2str(peak5)+".png";
+        exportfigure(filename);
+        closeall;
+    }
+}

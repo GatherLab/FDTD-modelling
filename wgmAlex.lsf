@@ -1,0 +1,184 @@
+startIndex=1.36;
+endIndex=1.39;
+for(myindex=startIndex; myindex<=endIndex; myindex=myindex+0.02){
+    #adjust geometry
+    switchtolayout;
+            
+
+
+    select("FDTD");
+    set("background index", myindex);
+            
+    run; 
+    spec=getresult("monitor_2", "spectrum");
+	E=abs(pinch(spec.E));
+	ey=pinch(E, 2, 2);
+	ex=pinch(E, 2,1);
+	ez=pinch(E, 2, 3);
+	lam=spec.lambda;
+    power=sqrt(abs(ex)^2+abs(ey)^2+abs(ez)^2);
+
+    title="index"+num2str(myindex)+"_"+num2str(radius)+"_";
+    myfig=plot(lam,power, "wavelength (nm)", "power", title);
+	setplot("x min", 640e-09);
+	setplot("x max", 710e-09);
+    filename=title+".png";
+    filename_t=title+".txt";
+    exportfigure(filename);
+            
+    ##find 5 major TE peaks
+    peaksTE=findpeaks(sqrt(ex^2+ey^2), 5);
+    peaksTE=sort(peaksTE);
+    peak1TE=lam(peaksTE(1));
+    peak2TE=lam(peaksTE(2));
+    peak3TE=lam(peaksTE(3));
+    peak4TE=lam(peaksTE(4));
+    peak5TE=lam(peaksTE(5));
+    
+##find 5 major TM peaks
+    peaksTM=findpeaks(ez, 5);
+    peaksTM=sort(peaksTM);
+    peak1TM=lam(peaksTM(1));
+    peak2TM=lam(peaksTM(2));
+    peak3TM=lam(peaksTM(3));
+    peak4TM=lam(peaksTM(4));
+    peak5TM=lam(peaksTM(5));
+
+	write(filename_t, num2str(lam));
+    write(filename_t, num2str(power));
+    
+if (myindex==startIndex) { #use first run to set monitors
+	    
+        
+	switchtolayout;
+    
+	##readjust monitors to match TM peaks
+	select("new group::profile1_1");
+	set("wavelength center", peak1TM);
+	select("new group::profile2_1");
+	set("wavelength center", peak2TM);
+	select("new group::profile3_1");
+	set("wavelength center", peak3TM);
+	select("new group::profile4_1");
+	set("wavelength center", peak4TM);
+	select("new group::profile5_1");
+	set("wavelength center", peak5TM);
+    
+	##readjust monitors to match TE peaks
+	select("new group3::profile1_1");
+	set("wavelength center", peak1TE);
+	select("new group3::profile2_1");
+	set("wavelength center", peak2TE);
+	select("new group3::profile3_1");
+	set("wavelength center", peak3TE);
+	select("new group3::profile4_1");
+	set("wavelength center", peak4TE);
+	select("new group3::profile5_1");
+	set("wavelength center", peak5TE);
+}
+#endif
+	
+if (myindex==startIndex+0.02) { #use second run to export mode profiles
+    
+	# generate file names
+	filename1=title+num2str(peak1TM)+"TM.png";
+	filename2=title+num2str(peak2TM)+"TM.png";
+	filename3=title+num2str(peak3TM)+"TM.png";
+	filename4=title+num2str(peak4TM)+"TM.png";
+	filename5=title+num2str(peak5TM)+"TM.png";
+	filename11=title+num2str(peak1TE)+"TE.png";
+	filename21=title+num2str(peak2TE)+"TE.png";
+	filename31=title+num2str(peak3TE)+"TE.png";
+	filename41=title+num2str(peak4TE)+"TE.png";
+	filename51=title+num2str(peak5TE)+"TE.png";
+    
+	#save mode TM profiles
+	x=getdata("new group::profile1_1", "x");
+	y=getdata("new group::profile1_1", "y");
+	Ez=getdata("new group::profile1_1", "Ez");
+	E=pinch(abs(Ez));
+	image(x,y,E);
+	exportfigure(filename1);
+	x=getdata("new group::profile2_1", "x");
+	y=getdata("new group::profile2_1", "y");
+	Ez=getdata("new group::profile2_1", "Ez");
+	E=pinch(abs(Ez));
+	image(x,y,E);
+	exportfigure(filename2);
+	closeall;
+	x=getdata("new group::profile3_1", "x");
+	y=getdata("new group::profile3_1", "y");
+	Ez=getdata("new group::profile3_1", "Ez");
+	E=pinch(abs(Ez));
+	image(x,y,E);
+	exportfigure(filename3);
+	closeall;
+	x=getdata("new group::profile4_1", "x");
+	y=getdata("new group::profile4_1", "y");
+	Ez=getdata("new group::profile4_1", "Ez");
+	E=pinch(abs(Ez));
+	image(x,y,E);
+	exportfigure(filename4);
+	closeall;
+	x=getdata("new group::profile5_1", "x");
+	y=getdata("new group::profile5_1", "y");
+	Ez=getdata("new group::profile5_1", "Ez");
+	E=pinch(abs(Ez));
+	image(x,y,E);
+	exportfigure(filename5);
+	closeall;
+    
+	#save TE mode profiles
+	x=getdata("new group3::profile1_1", "x");
+	y=getdata("new group3::profile1_1", "y");
+	Ex=getdata("new group3::profile1_1", "Ex");
+	Ey=getdata("new group3::profile1_1", "Ey");
+	E=pinch(sqrt(abs(Ex)^2+abs(Ey)^2));
+	image(x,y,E);
+	exportfigure(filename11);
+	x=getdata("new group3::profile2_1", "x");
+	y=getdata("new group3::profile2_1", "y");
+	Ex=getdata("new group3::profile2_1", "Ex");
+	Ey=getdata("new group3::profile2_1", "Ey");
+	E=pinch(sqrt(abs(Ex)^2+abs(Ey)^2));
+	image(x,y,E);
+	exportfigure(filename21);
+	closeall;
+	x=getdata("new group3::profile3_1", "x");
+	y=getdata("new group3::profile3_1", "y");
+	Ex=getdata("new group3::profile3_1", "Ex");
+	Ey=getdata("new group3::profile3_1", "Ey");
+	E=pinch(sqrt(abs(Ex)^2+abs(Ey)^2));
+	image(x,y,E);
+	exportfigure(filename31);
+	closeall;
+	x=getdata("new group3::profile4_1", "x");
+	y=getdata("new group3::profile4_1", "y");
+	Ex=getdata("new group3::profile4_1", "Ex");
+	Ey=getdata("new group3::profile4_1", "Ey");
+	E=pinch(sqrt(abs(Ex)^2+abs(Ey)^2));
+	image(x,y,E);
+	exportfigure(filename41);
+	closeall;
+	x=getdata("new group3::profile5_1", "x");
+	y=getdata("new group3::profile5_1", "y");
+	Ex=getdata("new group3::profile5_1", "Ex");
+	Ey=getdata("new group3::profile5_1", "Ey");
+	E=pinch(sqrt(abs(Ex)^2+abs(Ey)^2));
+	image(x,y,E);
+	exportfigure(filename51);
+	closeall;
+}
+#endif
+	
+    
+##save results TM
+all_peaksTM=[radius, myindex, peak1TM, peak2TM, peak3TM, peak4TM, peak5TM];
+pathname="3D_TM.txt";
+write(pathname, num2str(all_peaksTM));
+#save results TE
+all_peaksTE=[radius, myindex, peak1TE, peak2TE, peak3TE, peak4TE, peak5TE];
+pathname="3D_TE.txt";
+write(pathname, num2str(all_peaksTE));
+closeall;
+}
